@@ -252,8 +252,7 @@ def parse_date(datestring, default_timezone=default_timezone):
         dt = utc.localize(dt) - timedelta(0, offset)
     return dt
 
-def cgi_call():
-    form = cgi.FieldStorage()
+def cgi_call(form):
     #print(form, file=sys.stderr)
     #print >>sys.stderr, "sample",form.getfirst('sample')
     #print >>sys.stderr, "mass",form.getfirst('mass')
@@ -482,6 +481,7 @@ def cgi_call():
 
 if __name__ == "__main__":
     try:
+        form = cgi.FieldStorage()
         response = cgi_call()
     except Exception:
         response = {
