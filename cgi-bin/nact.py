@@ -482,7 +482,7 @@ def cgi_call(form):
 if __name__ == "__main__":
     try:
         form = cgi.FieldStorage()
-        response = cgi_call()
+        response = cgi_call(form)
     except Exception:
         response = {
             'success':False,
