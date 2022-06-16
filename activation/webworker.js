@@ -51,7 +51,6 @@ self.onmessage = async (event) => {
     let python = `
       request = json.loads('${json_data}')
       form = FakeFieldStorage(request)
-      print('rest:', form.getlist('rest[]'))
       json.dumps(nact.cgi_call(form))
     `;
     //console.log('python:', python);
