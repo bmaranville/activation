@@ -4,6 +4,7 @@
 // `pyodide.js`, and all its associated `.asm.js`, `.data`, `.json`,
 // and `.wasm` files as well:
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js");
+// importScripts("./pyodide/pyodide.js");
 
 async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide();
@@ -38,7 +39,7 @@ async function loadPyodideAndPackages() {
   `)
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
-pyodideReadyPromise.then(() => self.postMessage({ready: true}));
+pyodideReadyPromise.then(() => self.postMessage({worker_ready: true}));
 
 self.onmessage = async (event) => {
   // make sure loading is done

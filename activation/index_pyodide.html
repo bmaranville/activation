@@ -7,7 +7,6 @@
 
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="jquery.tablesorter-2.0.5b.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
     <script>
         class Deferred {
             constructor() {
@@ -20,7 +19,7 @@
         const pyodideWorker = new Worker("./webworker.js");
         const worker_ready = new Deferred();
         pyodideWorker.onmessage = (event) => {
-            if ('ready' in event.data) {
+            if ('worker_ready' in event.data) {
                 console.log('ready!');
                 worker_ready.resolve();
             }
