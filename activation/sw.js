@@ -9,9 +9,9 @@ importScripts("https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js");
 
 
 async function loadPyodideAndPackages() {
-  self.pyodide = await loadPyodide();
-  await self.pyodide.loadPackage(["numpy", "pytz", "micropip"]);
-  await self.pyodide.runPythonAsync(`
+  const pyodide = await loadPyodide();
+  await pyodide.loadPackage(["numpy", "pytz", "micropip"]);
+  await pyodide.runPythonAsync(`
     import micropip
     await micropip.install("periodictable")
     import periodictable
@@ -38,21 +38,23 @@ async function loadPyodideAndPackages() {
             if isinstance(rval, str) or isinstance(rval, bytes):
                 return [rval]
             return list(rval)
-  `)
+  `);
+  self.pyodide = pyodide;
 }
 
 self.addEventListener("install", async () => {
-  let pyodideReadyPromise = loadPyodideAndPackages();
-  await pyodideReadyPromise;
+  self.pyodideReadyPromise = loadPyodideAndPackages();
+  await self.pyodideReadyPromise;
   console.log("install finished from sw.js side");
 })
 
 self.addEventListener("activate", function (event) {
   event.waitUntil((async () => {
+    await self.pyodideReadyPromise;
     await self.clients.claim();
     self.clients.matchAll().then(clients => {
       clients.forEach(client => client.postMessage("ready"));
-    })
+    });
   })());
   console.log("clients claimed");
 });
