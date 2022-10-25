@@ -7,6 +7,7 @@ importScripts("https://cdn.jsdelivr.net/npm/xhr-shim@0.1.3/src/index.js");
 self.XMLHttpRequest = self.XMLHttpRequestShim;
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js");
 
+let pyodide = null;
 
 async function loadPyodideAndPackages() {
   const pyodide = await loadPyodide();
@@ -43,7 +44,7 @@ async function loadPyodideAndPackages() {
 }
 
 self.addEventListener("install", () => {
-  // self.skipWaiting();
+  self.skipWaiting();
   self.pyodideReadyPromise = loadPyodideAndPackages();
   self.pyodideReadyPromise.then(() => {
     console.log("install finished from sw.js side");
@@ -62,10 +63,21 @@ self.addEventListener("activate", function (event) {
 });
 
 self.addEventListener("fetch", (event) => {
+  if (event.request.url.endsWith("/ready")) {
+    event.respondWith(make_ready());
+  }
   if (event.request.url.endsWith("/nact.py")) {
     event.respondWith(do_calculation(event));
   }
 });
+
+async function make_ready() {
+  if (!self?.pyodide?.runPythonAsync) {
+    const pyodideReadyPromise = loadPyodideAndPackages();
+    await pyodideReadyPromise;
+  }
+  return new Response("true", { headers: { 'Content-Type': 'application/json' } });
+}
 
 async function do_calculation(event) {
   try {
