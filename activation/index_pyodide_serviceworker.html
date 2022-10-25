@@ -32,10 +32,16 @@
                             // scope: '/cgi-bin/'
                         }
                     );
+                    if (navigator.serviceWorker.controller == null) {
+                        // then it's a hard refresh which has disabled the service worker:
+                        window.location.reload();
+                    }
                     if (registration.installing) {
                         console.log('Service worker installing');
                     } else if (registration.waiting) {
                         console.log('Service worker installed');
+                        worker_ready.resolve();
+
                     } else if (registration.active) {
                         console.log('Service worker active');
                         worker_ready.resolve();

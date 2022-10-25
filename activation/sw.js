@@ -42,10 +42,12 @@ async function loadPyodideAndPackages() {
   self.pyodide = pyodide;
 }
 
-self.addEventListener("install", async () => {
+self.addEventListener("install", () => {
+  // self.skipWaiting();
   self.pyodideReadyPromise = loadPyodideAndPackages();
-  await self.pyodideReadyPromise;
-  console.log("install finished from sw.js side");
+  self.pyodideReadyPromise.then(() => {
+    console.log("install finished from sw.js side");
+  });
 })
 
 self.addEventListener("activate", function (event) {
@@ -55,8 +57,8 @@ self.addEventListener("activate", function (event) {
     self.clients.matchAll().then(clients => {
       clients.forEach(client => client.postMessage("ready"));
     });
+    console.log("clients claimed");
   })());
-  console.log("clients claimed");
 });
 
 self.addEventListener("fetch", (event) => {
