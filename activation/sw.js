@@ -48,7 +48,12 @@ self.addEventListener("install", async () => {
 })
 
 self.addEventListener("activate", function (event) {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil((async () => {
+    await self.clients.claim();
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => client.postMessage("ready"));
+    })
+  })());
   console.log("clients claimed");
 });
 
