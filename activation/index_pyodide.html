@@ -638,6 +638,7 @@
 
     window.onload = async function () {
         parse_url_parameters();
+        await worker_ready.promise;
         enable_forms();
         setup_help();
     };
