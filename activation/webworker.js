@@ -46,7 +46,7 @@ self.onmessage = async (event) => {
   await pyodideReadyPromise;
   // Don't bother yet with this line, suppose our API is built in such a way:
   const { request } = event.data;
-  const json_data = JSON.stringify(event.data.data);
+  const json_data = JSON.stringify(request.data);
   // Now is the easy part, the one that is similar to working in the main thread:
   try {
     let python = `
