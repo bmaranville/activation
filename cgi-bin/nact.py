@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import sys
-import cgi
 import re
 import json
 from math import exp
@@ -16,11 +15,7 @@ import traceback
 from datetime import datetime, timedelta
 from calendar import monthrange
 
-# CRUFT: python 2 doesn't have html.escape
-try:
-    from html import escape
-except ImportError:
-    from cgi import escape
+from html import escape
 
 from pytz import timezone, utc
 
@@ -491,6 +486,7 @@ def cgi_call(form):
 
 
 if __name__ == "__main__":
+    import cgi
     try:
         form = cgi.FieldStorage()
         response = cgi_call(form)
