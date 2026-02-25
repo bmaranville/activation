@@ -15,19 +15,11 @@ jobs:
       - name: Checkout your repository
         uses: actions/checkout@v4
       # Add steps to build your static site (e.g., npm run build)
-      - name: Get pyodide
+      - name: Run deployment script
         run: |
           PYODIDE_VERSION=0.29.3
-          cd activation && ./get_pyodide.sh
-      - name: Install files
-        run: |
-          mkdir -p dist
-          cp activation/index_pyodide_optimized.html dist/index.html
-          cp activation/jquery* dist/
-          cp activation/webworker.js dist/
-          cp activation/favicon.ico dist/
-          cp cgi-bin/nact.py dist/
-          cp -r activation/pyodide dist/pyodide
+          TARGET_DIR=dist
+          ./deploy.sh
       - name: Upload artifact
         # The contents of the 'build' directory will be uploaded as an artifact
         uses: actions/upload-pages-artifact@v4
