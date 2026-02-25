@@ -6,9 +6,13 @@ import { loadPyodide } from "./pyodide/pyodide.mjs";
 async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide();
   await self.pyodide.loadPackage(["numpy", "pytz", "micropip"]);
+
+  // get the periodictable wheel name from the special file:
+  const response = await fetch("./periodictable_wheel_name.txt");
+  const wheelName = (await response.text()).trim();
   await self.pyodide.runPythonAsync(`
     import micropip
-    await micropip.install("periodictable")
+    await micropip.install("./${wheelName}")
     import periodictable
     print(periodictable.__version__)
   `)
