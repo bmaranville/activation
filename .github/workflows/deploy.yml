@@ -15,19 +15,17 @@ jobs:
       - name: Checkout your repository
         uses: actions/checkout@v4
       # Add steps to build your static site (e.g., npm run build)
+      - name: Get pyodide
+        run: |
+          PYODIDE_VERSION=0.29.3
+          cd activation && ./get_pyodide.sh
       - name: Install files
         run: |
           mkdir -p dist
           cp activation/index_pyodide_optimized.html dist/index.html
           cp activation/jquery* dist/
           cp activation/webworker.js dist/
-      - name: Get Pyodide
-        run: |
-          PYODIDE_VERSION=0.29.3
-          mkdir -p dist/pyodide
-          curl -L https://github.com/pyodide/pyodide/releases/download/${PYODIDE_VERSION}/pyodide-core-${PYODIDE_VERSION}.tar.bz2 -o pyodide.tar.bz2
-          tar -xjf pyodide.tar.bz2 -C dist/pyodide --strip-components=1
-          rm pyodide.tar.bz2
+          cp -r activation/pyodide dist/pyodide
       - name: Upload artifact
         # The contents of the 'build' directory will be uploaded as an artifact
         uses: actions/upload-pages-artifact@v4
