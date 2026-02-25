@@ -17,8 +17,8 @@ jobs:
       # Add steps to build your static site (e.g., npm run build)
       - name: Run deployment script
         run: |
-          PYODIDE_VERSION=0.29.3
-          TARGET_DIR=dist
+          export PYODIDE_VERSION=0.29.3
+          export TARGET_DIR=dist
           ./deploy.sh
       - name: Upload artifact
         # The contents of the 'build' directory will be uploaded as an artifact
