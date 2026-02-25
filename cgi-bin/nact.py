@@ -14,14 +14,16 @@ from math import exp
 import traceback
 from datetime import datetime, timedelta
 from calendar import monthrange
-
+from dataclasses import dataclass
 from html import escape
+from typing import Literal, Optional
 
 from pytz import timezone, utc
 
 import periodictable
-from periodictable import elements, activation, formula, \
+from periodictable import elements, activation, \
         neutron_scattering, xray_sld, nsf, util, xsf
+from periodictable.formulas import formula
 
 
 ISO8601_RELAXED = re.compile(r"""^ # anchor to start of string
@@ -87,7 +89,7 @@ DEBUG = False
 #   beta:value => alpha=gamma=90
 #
 
-def parse_density(value_str):
+def parse_density(value_str) -> tuple[Literal['default', 'volume', 'isotope', 'natural'], float]:
     if value_str == '':
         return 'default', 0
     if value_str.endswith('A3'):
@@ -167,7 +169,7 @@ def error():
     else:
         return str(sys.exc_info()[1])
 
-HOUR_SCALE = {
+HOUR_SCALE: dict[str, float] = {
     'h': 1,
     'm': 1./60,
     's': 1./3600,
@@ -248,114 +250,208 @@ def parse_date(datestring, default_timezone=default_timezone):
         dt = utc.localize(dt) - timedelta(0, offset)
     return dt
 
-def cgi_call(form):
-    #print(form, file=sys.stderr)
-    #print >>sys.stderr, "sample",form.getfirst('sample')
-    #print >>sys.stderr, "mass",form.getfirst('mass')
 
-    # Parse inputs
-    errors = {}
-    calculate = form.getfirst('calculate', 'all')
-    if calculate not in ('scattering', 'activation', 'all'):
-        errors['calculate'] = "calculate should be one of 'scattering', 'activation' or 'all'"
-    try:
-        sample = form.getfirst('sample')
-        chem = formula(sample)
-    except Exception:
-        errors['sample'] = error()
-    try:
-        fluence = float(form.getfirst('flux', 100000))
-    except Exception:
-        errors['flux'] = error()
-    try:
-        fast_ratio = float(form.getfirst('fast', '0'))
-    except Exception:
-        errors['fast'] = error()
-    try:
-        Cd_ratio = float(form.getfirst('Cd', '0'))
-    except Exception:
-        errors['Cd'] = error()
-    try:
-        exposure = parse_hours(form.getfirst('exposure', '1'))
-    except Exception:
-        errors['exposure'] = error()
-    try:
-        mass_str = form.getfirst('mass', '0')
-        if mass_str.endswith('kg'):
-            mass = 1000*float(mass_str[:-2])
-        elif mass_str.endswith('mg'):
-            mass = 0.001*float(mass_str[:-2])
-        elif mass_str.endswith('ug'):
-            mass = 1e-6*float(mass_str[:-2])
-        elif mass_str.endswith('g'):
-            mass = float(mass_str[:-1])
-        else:
-            mass = float(mass_str)
-    except Exception:
-        errors['mass'] = error()
-    try:
-        density_type, density_value = parse_density(form.getfirst('density', '0'))
-    except Exception:
-        errors['density'] = error()
-    try:
-        #print >>sys.stderr,form.getlist('rest[]')
-        rest_times = [parse_rest(v) for v in form.getlist('rest[]')]
-        if not rest_times:
-            rest_times = [0, 1, 24, 360]
-    except Exception:
-        errors['rest'] = error()
-    try:
-        decay_level = float(form.getfirst('decay', '0.001'))
-    except Exception:
-        errors['decay'] = error()
-    try:
-        thickness = float(form.getfirst('thickness', '1'))
-    except Exception:
-        errors['thickness'] = error()
-    try:
-        wavelength_str = form.getfirst('wavelength', '1').strip()
-        if wavelength_str.endswith('meV'):
-            wavelength = nsf.neutron_wavelength(float(wavelength_str[:-3]))
-        elif wavelength_str.endswith('m/s'):
-            wavelength = nsf.neutron_wavelength_from_velocity(float(wavelength_str[:-3]))
-        elif wavelength_str.endswith('Ang'):
-            wavelength = float(wavelength_str[:-3])
-        else:
-            wavelength = float(wavelength_str)
-        #print >>sys.stderr,wavelength_str
-    except Exception:
-        errors['wavelength'] = error()
-    try:
-        xray_source = form.getfirst('xray', 'Cu Ka').strip()
-        if xray_source.endswith('Ka'):
-            xray_wavelength = elements.symbol(xray_source[:-2].strip()).K_alpha
-        elif xray_source.endswith('keV'):
-            xray_wavelength = xsf.xray_wavelength(float(xray_source[:-3]))
-        elif xray_source.endswith('Ang'):
-            xray_wavelength = float(xray_source[:-3])
-        elif xray_source[0].isalpha():
-            xray_wavelength = elements.symbol(xray_source).K_alpha
-        else:
-            xray_wavelength = float(xray_source)
-        #print >>sys.stderr,"xray",xray_source,xray_wavelength
-    except Exception:
-        errors['xray'] = error()
-    try:
-        abundance_source = form.getfirst('abundance', 'IAEA')
-        if abundance_source == "IUPAC":
-            abundance = activation.table_abundance
-        # CRUFT: periodictable no longer uses NIST 2001 data for abundance
-        elif abundance_source == "NIST":
-            abundance = activation.table_abundance
-        elif abundance_source == "IAEA":
-            abundance = activation.IAEA1987_isotopic_abundance
-        else:
-            raise ValueError("abundance should be IUPAC or IAEA")
-    except Exception:
-        errors['abundance'] = error()
+@dataclass
+class ValidatedRequest:
+    """Validated and parsed request data for activation calculations."""
+    calculate: Literal['scattering', 'activation', 'all']
+    sample: str
+    chem: 'periodictable.formulas.Formula'
+    fluence: float
+    fast_ratio: float
+    Cd_ratio: float
+    exposure: float
+    mass: float
+    density_type: str
+    density_value: float
+    rest_times: tuple[float, ...]
+    decay_level: float
+    thickness: float
+    wavelength: float
+    xray_wavelength: float
+    abundance: 'periodictable.activation.ActivationTable'
+    
+    @classmethod
+    def validate(cls, req: dict) -> tuple[Optional['ValidatedRequest'], dict]:
+        """
+        Validate and parse form data.
+        
+        Args:
+            req: dict containing raw form field values
+        
+        Returns:
+            tuple: (ValidatedRequest instance if valid else None, errors dict)
+        """
+        #print(req, file=sys.stderr)
+        #print >>sys.stderr, "sample",req.get('sample')
+        #print >>sys.stderr, "mass",req.get('mass')
 
-    if errors:
-        return {'success':False, 'error':'invalid request', 'detail':errors}
+        # Parse inputs
+        errors = {}
+        validated = {}
+        
+        validated['calculate'] = req.get('calculate', 'all')
+        if validated['calculate'] not in ('scattering', 'activation', 'all'):
+            errors['calculate'] = "calculate should be one of 'scattering', 'activation' or 'all'"
+        
+        try:
+            validated['sample'] = req.get('sample')
+            validated['chem'] = formula(validated['sample'])
+        except Exception:
+            errors['sample'] = error()
+        try:
+            validated['fluence'] = float(req.get('flux', '100000'))
+        except Exception:
+            errors['flux'] = error()
+        try:
+            validated['fast_ratio'] = float(req.get('fast', '0'))
+        except Exception:
+            errors['fast'] = error()
+        try:
+            validated['Cd_ratio'] = float(req.get('Cd', '0'))
+        except Exception:
+            errors['Cd'] = error()
+        try:
+            validated['exposure'] = parse_hours(req.get('exposure', '1'))
+        except Exception:
+            errors['exposure'] = error()
+        try:
+            mass_str = req.get('mass', '0')
+            if mass_str.endswith('kg'):
+                validated['mass'] = 1000*float(mass_str[:-2])
+            elif mass_str.endswith('mg'):
+                validated['mass'] = 0.001*float(mass_str[:-2])
+            elif mass_str.endswith('ug'):
+                validated['mass'] = 1e-6*float(mass_str[:-2])
+            elif mass_str.endswith('g'):
+                validated['mass'] = float(mass_str[:-1])
+            else:
+                validated['mass'] = float(mass_str)
+        except Exception:
+            errors['mass'] = error()
+        try:
+            validated['density_type'], validated['density_value'] = parse_density(req.get('density', '0'))
+        except Exception:
+            errors['density'] = error()
+        try:
+            #print >>sys.stderr,req.get('rest', [])
+            rest_times = [parse_rest(v) for v in req.get('rest', [])]
+            if not rest_times:
+                rest_times = [0, 1, 24, 360]
+            validated['rest_times'] = tuple(rest_times)
+        except Exception:
+            errors['rest'] = error()
+        try:
+            validated['decay_level'] = float(req.get('decay', '0.001'))
+        except Exception:
+            errors['decay'] = error()
+        try:
+            validated['thickness'] = float(req.get('thickness', '1'))
+        except Exception:
+            errors['thickness'] = error()
+        try:
+            wavelength_str = req.get('wavelength', '1').strip()
+            if wavelength_str.endswith('meV'):
+                validated['wavelength'] = nsf.neutron_wavelength(float(wavelength_str[:-3]))
+            elif wavelength_str.endswith('m/s'):
+                validated['wavelength'] = nsf.neutron_wavelength_from_velocity(float(wavelength_str[:-3]))
+            elif wavelength_str.endswith('Ang'):
+                validated['wavelength'] = float(wavelength_str[:-3])
+            else:
+                validated['wavelength'] = float(wavelength_str)
+            #print >>sys.stderr,wavelength_str
+        except Exception:
+            errors['wavelength'] = error()
+        try:
+            xray_source = req.get('xray', 'Cu Ka').strip()
+            if xray_source.endswith('Ka'):
+                validated['xray_wavelength'] = elements.symbol(xray_source[:-2].strip()).K_alpha
+            elif xray_source.endswith('keV'):
+                validated['xray_wavelength'] = xsf.xray_wavelength(float(xray_source[:-3]))
+            elif xray_source.endswith('Ang'):
+                validated['xray_wavelength'] = float(xray_source[:-3])
+            elif xray_source[0].isalpha():
+                validated['xray_wavelength'] = elements.symbol(xray_source).K_alpha
+            else:
+                validated['xray_wavelength'] = float(xray_source)
+            #print >>sys.stderr,"xray",xray_source,validated['xray_wavelength']
+        except Exception:
+            errors['xray'] = error()
+        try:
+            abundance_source = req.get('abundance', 'IAEA')
+            if abundance_source == "IUPAC":
+                validated['abundance'] = activation.table_abundance
+            # CRUFT: periodictable no longer uses NIST 2001 data for abundance
+            elif abundance_source == "NIST":
+                validated['abundance'] = activation.table_abundance
+            elif abundance_source == "IAEA":
+                validated['abundance'] = activation.IAEA1987_isotopic_abundance
+            else:
+                raise ValueError("abundance should be IUPAC or IAEA")
+        except Exception:
+            errors['abundance'] = error()
+
+        if errors:
+            return None, errors
+        
+        return cls(**validated), {}
+
+
+def extract_form_data(form: 'cgi.FieldStorage') -> dict:
+    """
+    Extract data from cgi.FieldStorage into a plain dict.
+    
+    Args:
+        form: cgi.FieldStorage object
+    
+    Returns:
+        dict with form field values
+    """
+    return {
+        'calculate': form.getfirst('calculate', 'all'),
+        'sample': form.getfirst('sample'),
+        'flux': form.getfirst('flux', '100000'),
+        'fast': form.getfirst('fast', '0'),
+        'Cd': form.getfirst('Cd', '0'),
+        'exposure': form.getfirst('exposure', '1'),
+        'mass': form.getfirst('mass', '0'),
+        'density': form.getfirst('density', '0'),
+        'rest': form.getlist('rest[]'),
+        'decay': form.getfirst('decay', '0.001'),
+        'thickness': form.getfirst('thickness', '1'),
+        'wavelength': form.getfirst('wavelength', '1'),
+        'xray': form.getfirst('xray', 'Cu Ka'),
+        'abundance': form.getfirst('abundance', 'IAEA'),
+    }
+
+
+def calculate(validated: ValidatedRequest):
+    """
+    Perform activation and scattering calculations.
+    
+    Args:
+        validated: ValidatedRequest instance with validated parameters
+    
+    Returns:
+        dict with calculation results
+    """
+    # Extract validated parameters
+    calculate = validated.calculate
+    sample = validated.sample
+    chem = validated.chem
+    fluence = validated.fluence
+    fast_ratio = validated.fast_ratio
+    Cd_ratio = validated.Cd_ratio
+    exposure = validated.exposure
+    mass = validated.mass
+    density_type = validated.density_type
+    density_value = validated.density_value
+    rest_times = validated.rest_times
+    decay_level = validated.decay_level
+    thickness = validated.thickness
+    wavelength = validated.wavelength
+    xray_wavelength = validated.xray_wavelength
+    abundance = validated.abundance
 
     # Fill in defaults
     #print >>sys.stderr,density_type,density_value,chem.density
@@ -485,11 +581,30 @@ def cgi_call(form):
     return result
 
 
+def api_call(request_data):
+    """
+    Main entry point for API request processing.
+    
+    Args:
+        request_data: dict containing raw form field values
+    
+    Returns:
+        dict with calculation results or error details
+    """
+    validated, errors = ValidatedRequest.validate(request_data)
+    
+    if validated is not None:
+        return calculate(validated)
+    else:
+        return {'success': False, 'error': 'invalid request', 'detail': errors}
+
+
 if __name__ == "__main__":
     import cgi
     try:
         form = cgi.FieldStorage()
-        response = cgi_call(form)
+        request_data = extract_form_data(form)
+        response = api_call(request_data)
     except Exception:
         response = {
             'success': False,
