@@ -19,7 +19,7 @@ jobs:
         run: |
           export PYODIDE_VERSION=0.29.3
           export TARGET_DIR=dist
-          ./deploy.sh
+          ./deploy_calculator.sh
       - name: Upload artifact
         # The contents of the 'build' directory will be uploaded as an artifact
         uses: actions/upload-pages-artifact@v4
