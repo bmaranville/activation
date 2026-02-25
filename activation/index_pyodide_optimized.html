@@ -16,7 +16,7 @@
                 });
             }
         }
-        const pyodideWorker = new Worker("./webworker.js");
+        const pyodideWorker = new Worker("./webworker.js", {type: "module"});
         const worker_ready = new Deferred();
         pyodideWorker.onmessage = (event) => {
             if ('worker_ready' in event.data) {

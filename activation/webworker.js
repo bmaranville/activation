@@ -1,10 +1,7 @@
 // webworker.js
 
-// Setup your project to serve `py-worker.js`. You should also serve
-// `pyodide.js`, and all its associated `.asm.js`, `.data`, `.json`,
-// and `.wasm` files as well:
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js");
-// importScripts("./pyodide/pyodide.js");
+import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.mjs";
+// import { loadPyodide } from "./pyodide/pyodide.mjs";
 
 async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide();
