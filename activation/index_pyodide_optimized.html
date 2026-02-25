@@ -68,16 +68,20 @@
         tbody tr:nth-child(2n) td, tbody tr.even td,
         ul li:nth-child(2n), ol li:nth-child(2n) { background: inherit; /* background: none repeat scroll 0 0 #F3F3F9; */ }
         table.tablesorter thead tr .headerSortable {
-            background-image: url(resonance-theme/bg.gif);
-            background-repeat: no-repeat;
-            background-position: center right;
             padding-right: 2em; /* space for sort arrows */
+            cursor: pointer;
         }
-        table.tablesorter thead tr .headerSortUp {
-            background-image: url(resonance-theme/asc.gif);
+        table.tablesorter thead tr .headerSortable::after {
+            content: " \25B4\25BE"; /* ▴▾ */
+            opacity: 0.4;
         }
-        table.tablesorter thead tr .headerSortDown {
-            background-image: url(resonance-theme/desc.gif);
+        table.tablesorter thead tr .headerSortUp::after {
+            content: " \25B2"; /* ▲ */
+            opacity: 1;
+        }
+        table.tablesorter thead tr .headerSortDown::after {
+            content: " \25BC"; /* ▼ */
+            opacity: 1;
         }
 
         /* output markup */
@@ -784,7 +788,10 @@
 <body>
 
 <noscript>
-<h3>Enable javascript to run the activation calculator.</h3><hr />
+<div style="margin: 4em auto; max-width: 480px; padding: 2em; border: 1px solid #c8a700; border-radius: 6px; background: #fffbe6; text-align: center; font-family: sans-serif;">
+  <h2 style="margin-top: 0;">JavaScript Required</h2>
+  <p>This activation calculator runs entirely in your browser using JavaScript. Please enable JavaScript to use this page.</p>
+</div>
 </noscript>
 
 <div id="wrapper" class="container">
