@@ -22,7 +22,7 @@ tar -xjf pyodide_full.tar.bz2 -C ./pyodide --strip-components=1 \
     'micropip-*.whl' 'numpy-*.whl' 'pytz-*.whl' 'pyparsing-*.whl'
 
 # Download the latest periodictable wheel from PyPI
-pip download periodictable --no-deps --only-binary :all: -d ./pyodide/
+pip3 download periodictable --no-deps --only-binary :all: -d ./pyodide/
 
 # Write out the full wheel file name to a text file for use in the workflow
 ls pyodide/periodictable-*.whl > periodictable_wheel_name.txt
