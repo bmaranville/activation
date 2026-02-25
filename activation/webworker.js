@@ -1,6 +1,6 @@
 // webworker.js
 
-import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.mjs";
+import { loadPyodide } from "./pyodide/pyodide.mjs";
 // import { loadPyodide } from "./pyodide/pyodide.mjs";
 
 async function loadPyodideAndPackages() {
