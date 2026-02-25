@@ -16,7 +16,7 @@ async function loadPyodideAndPackages() {
   // Downloading a single file
   await pyodide.runPythonAsync(`
     from pyodide.http import pyfetch
-    response = await pyfetch("../cgi-bin/nact.py")
+    response = await pyfetch("./nact.py")
     with open("nact.py", "wb") as f:
         f.write(await response.bytes())
     import nact
