@@ -75,11 +75,11 @@
             content: " \25B4\25BE"; /* ▴▾ */
             opacity: 0.4;
         }
-        table.tablesorter thead tr .headerSortUp::after {
+        table.tablesorter thead tr .headerSortable.headerSortUp::after {
             content: " \25B2"; /* ▲ */
             opacity: 1;
         }
-        table.tablesorter thead tr .headerSortDown::after {
+        table.tablesorter thead tr .headerSortable.headerSortDown::after {
             content: " \25BC"; /* ▼ */
             opacity: 1;
         }
@@ -739,11 +739,11 @@
         // End of div
         content += '</div>\n';
 
-        $(content).prependTo('div[id=results]'); //add to the dom
+        var $new = $(content).prependTo('div[id=results]'); //add to the dom
         // Start table unsorted so that b reactions follow transients as they
         // do in the activation table. Note that there is no way to get back
         // the original order.
-        $("table").tablesorter();
+        $new.find("table").tablesorter();
         scroll_to_result();
     }
 
