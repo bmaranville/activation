@@ -25,6 +25,7 @@ jobs:
           cp activation/index_pyodide_optimized.html dist/index.html
           cp activation/jquery* dist/
           cp activation/webworker.js dist/
+          cp activation/favicon.ico dist/
           cp cgi-bin/nact.py dist/
           cp -r activation/pyodide dist/pyodide
       - name: Upload artifact
