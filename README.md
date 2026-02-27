@@ -45,6 +45,19 @@ Additional files:
 
 * cgi-bin/hello.py is a minimal test script for python cgi.
 
+Pyodide implementation
+======================
+You can make a serverless install using pyodide to run the backend API. The `deploy_calculator.sh`
+script will install to `/var/html/resources/activation/index.html`.
+
+To test the pyodide version before deploying, install into a temporary directory:
+```sh
+TARGET_DIR=/tmp/pt bash deploy_calculator.sh
+(cd /tmp/pt && python -m http.server)
+```
+You can then navigate to http://localhost:8000/index.html to view the application.
+
+
 Backend interface
 =================
 
