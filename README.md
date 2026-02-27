@@ -13,14 +13,8 @@ available on [github](https://github.com/pkienzle/periodictable).
 Installation
 ============
 
-The activation web frontend is in the activation subdirectory and the cgi
-backend is in cgi-bin. Update the server with something like:
-
-    sudo cp -rp activation/* /var/www/resources/activation
-    sudo cp -p cgi-bin/nact.py /var/www/cgi-bin
-
-The web page uses the date of activate/index.html to show the last
-modification date on the program, so be sure to preserve attributes in copy.
+The activation web frontend is in the activation subdirectory.
+The backend API is in the cgi-bin folder (nact.py)
 
 Be sure the web server is configured to use python 3, with the periodictable
 package updated to the latest version:
@@ -33,7 +27,8 @@ of updates this will also set the last modification date on index.html.
 
 For testing you can run the server from the repository:
 
-    python server.py [host | host:port]
+    pip install flask
+    python flask_server.py [host | host:port]
 
 Additional files:
 
@@ -41,7 +36,7 @@ Additional files:
   needed unless you wish to update the graphs, for example, when new versions of
   the endf database are released.
 
-* server.py is used to run a test server for debugging the web application, or
+* flask_server.py is used to run a test server for debugging the web application, or
   showing potential new features to users. See the help inside the file for
   details on running the server.
 
@@ -81,6 +76,25 @@ request = {
     xray: 'Cu Ka',     // Source Xrays
     decay: '0.001',    // target for "Time to decay below"
     abundance: 'IAEA'  // natural abundance tables (IAEA or NIST)
+}
+```
+
+```python
+python_request = {
+    'calculate': "all", # target is "scattering" or "activation" or "all"
+    'sample': 'Co',        # Material
+    'flux': '100000',    # Thermal flux
+    'Cd': '0',           # Cd ratio
+    'fast': '0',         # Thermal/fast ratio
+    'mass': '0',         # Mass
+    'exposure': '1',     # Time on beam
+    'rest': ["0","1","24","360"], # Time off beam
+    'density': '0',      # Density
+    'thickness': '1',    # Thickness
+    'wavelength': '1',   # Source neutrons
+    'xray': 'Cu Ka',     # Source Xrays
+    'decay': '0.001',    # target for "Time to decay below"
+    'abundance': 'IAEA'  # natural abundance tables (IAEA or NIST)
 }
 ```
 
