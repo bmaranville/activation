@@ -53,7 +53,16 @@ self.onmessage = async (event) => {
     let python = `
       request = json.loads('${json_data}')
       form = FakeFieldStorage(request)
-      json.dumps(nact.cgi_call(form))
+      try:
+          response = nact.cgi_call(form)
+      except Exception:
+          response = {
+            'success': False,
+            'version': periodictable.__version__,
+            'detail': {'query': error()},
+            'error': 'unexpected exception',
+          }
+      json.dumps(response)
     `;
     //console.log('python:', python);
     let results = await self.pyodide.runPythonAsync(python);
