@@ -162,119 +162,125 @@ Example
 -------
 
 ```sh
-$ curl -s -d "sample=Co" -X POST https://www.ncnr.nist.gov/cgi-bin/nact.py | python -m json.tool
+$ curl -s -d '{"sample": "Co"}' -H "Content-Type: application/json" -X POST http://localhost:8008/api/calculate | python -m json.tool
 {
-    "sample": {
-        "name": "Co",
-        "density": 8.9,
-        "natural_density": 8.9,
-        "thickness": 1.0,
-        "mass": 1.0,
-        "formula": "Co"
-    },
     "activation": {
-        "flux": 100000.0,
-        "decay_level": 0.001,
-        "total": [
-            0.5088248094656863,
-            0.009706843055148993,
-            1.550197781340068e-05,
-            1.5423998799711213e-05
+        "Cd": 0.0,
+        "activity": [
+            {
+                "comments": "",
+                "halflife": "10.5 m",
+                "isotope": "Co-59",
+                "levels": [
+                    0.5087467869376632,
+                    0.009690144997026036,
+                    2.6447704770864502e-42,
+                    0.0
+                ],
+                "product": "Co-60m+",
+                "reaction": "act"
+            },
+            {
+                "comments": "Co-61 prod from Co-60m only",
+                "halflife": "1.65 h",
+                "isotope": "Co-59",
+                "levels": [
+                    7.305869373119584e-16,
+                    4.799870068457319e-16,
+                    3.0552994658480865e-20,
+                    1.52897407497221e-81
+                ],
+                "product": "Co-61",
+                "reaction": "2n"
+            },
+            {
+                "comments": "s for 10m isomer added to ground state",
+                "halflife": "5.272 y",
+                "isotope": "Co-59",
+                "levels": [
+                    1.5505657464889658e-05,
+                    1.5505424745333514e-05,
+                    1.5500073159453058e-05,
+                    1.5422103726672467e-05
+                ],
+                "product": "Co-60",
+                "reaction": "act"
+            },
+            {
+                "comments": "Co-61 prod assuming all Co-60m has decayed to Co-60",
+                "halflife": "1.65 h",
+                "isotope": "Co-59",
+                "levels": [
+                    1.3647822848511002e-16,
+                    8.966458753177e-17,
+                    5.707491296308241e-21,
+                    2.8562196022780084e-82
+                ],
+                "product": "Co-61",
+                "reaction": "2n"
+            }
         ],
+        "decay_level": 0.001,
+        "decay_time": 1.5773360047132599,
+        "exposure": 1.0,
+        "fast": 0.0,
+        "flux": 100000.0,
         "rest": [
             0,
             1,
             24,
             360
         ],
-        "activity": [
-            {
-                "reaction": "act",
-                "product": "Co-60",
-                "halflife": "5.272 y",
-                "comments": "s for 10m isomer added to ground state",
-                "levels": [
-                    1.550756280503848e-05,
-                    1.5507330056885684e-05,
-                    1.5501977813400642e-05,
-                    1.5423998799711213e-05
-                ],
-                "isotope": "Co-59"
-            },
-            {
-                "reaction": "act",
-                "product": "Co-60m+",
-                "halflife": "10.5 m",
-                "comments": "",
-                "levels": [
-                    0.5088093019028804,
-                    0.009691335725091536,
-                    2.6450954673146495e-42,
-                    0.0
-                ],
-                "isotope": "Co-59"
-            },
-            {
-                "reaction": "2n",
-                "product": "Co-61",
-                "halflife": "1.65 h",
-                "comments": "Co-61 prod from Co-60m only",
-                "levels": [
-                    7.306767120646388e-16,
-                    4.800459878001244e-16,
-                    3.055674902007567e-20,
-                    1.5291619557875176e-81
-                ],
-                "isotope": "Co-59"
-            },
-            {
-                "reaction": "2n",
-                "product": "Co-61",
-                "halflife": "1.65 h",
-                "comments": "Co-61 prod assuming all Co-60m has decayed to Co-60",
-                "levels": [
-                    1.3649499897275873e-16,
-                    8.967560554449202e-17,
-                    5.7081926346341585e-21,
-                    2.8565705754412276e-82
-                ],
-                "isotope": "Co-59"
-            }
-        ],
-        "exposure": 1.0,
-        "decay_time": 1.5773675158317233,
-        "fast": 0.0,
-        "Cd": 0.0
+        "total": [
+            0.508762292595129,
+            0.00970565042177194,
+            1.5500073159453095e-05,
+            1.5422103726672467e-05
+        ]
+    },
+    "sample": {
+        "density": 8.9,
+        "formula": "Co",
+        "formula_latex": "Co",
+        "mass": 1.0,
+        "name": "Co",
+        "natural_density": 8.9,
+        "thickness": 1.0
     },
     "scattering": {
-        "sld": {
-            "real": 2.2645416201426363,
-            "imag": 0.009403091502484154,
-            "incoh": 5.632988294016107
+        "contrast_match": {
+            "D2O_fraction": 0.4066002243307043,
+            "sld": 2.2645414633790257
         },
-        "xs": {
-            "coh": 0.07085810248318081,
-            "abs": 1.8806183004968307,
-            "incoh": 0.43843639843243204
-        },
-        "penetration": 0.4184253079898973,
         "neutron": {
-            "wavelength": 1.0,
-            "energy": 81.80420235572412,
-            "velocity": 3956.0339760560055
+            "energy": 81.80421023488275,
+            "velocity": 3956.0340061039888,
+            "wavelength": 1.0
         },
-        "transmission": 9.163767420488476
-    },
-    "xray_scattering": {
-        "xray": {
-            "wavelength": 1.5418,
-            "energy": 8.041522080237366
-        },
+        "penetration": 0.4184253369555237,
         "sld": {
-            "real": 63.020248367719645,
-            "imag": 9.14097379704212
+            "imag": 0.009403090851552168,
+            "incoh": 5.632980055822083,
+            "real": 2.2645414633790257
+        },
+        "transmission": 9.16376893656492,
+        "xs": {
+            "abs": 1.8806181703104334,
+            "coh": 0.07085931929382916,
+            "incoh": 0.4384351463657107
         }
     },
-    "success": true
+    "success": true,
+    "version": "2.0.2",
+    "xray_scattering": {
+        "sld": {
+            "imag": 9.140742563282087,
+            "real": 63.02025244915057
+        },
+        "xray": {
+            "energy": 8.041522793695698,
+            "wavelength": 1.5418
+        }
+    }
 }
 ```
