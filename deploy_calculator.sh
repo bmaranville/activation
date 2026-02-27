@@ -7,7 +7,6 @@ TARGET_DIR=${TARGET_DIR:-/var/www/html/resources/activation}
 
 # Now copy all the necessary files to the target directory for deployment:
 mkdir -p $TARGET_DIR
-cp activation/index_template.html $TARGET_DIR/index.html
 cp activation/jquery* $TARGET_DIR/
 cp activation/*.js $TARGET_DIR/
 cp activation/webworker.js $TARGET_DIR/
@@ -21,5 +20,6 @@ cp -r activation/css $TARGET_DIR/
 PERIODICTABLE_VERSION=$(python -c "import periodictable; print(periodictable.__version__)")
 
 # Write replacements in template
-sed -i "s@{{ api_script }}@api_webworker.js@g" $TARGET_DIR/index.html
-sed -i "s@{{ periodictable_version }}@$PERIODICTABLE_VERSION@g" $TARGET_DIR/index.html
+API_SUB="s@{{ api_script }}@api_webworker.js@g"
+VER_SUB="s@{{ periodictable_version }}@$PERIODICTABLE_VERSION@g"
+sed -e "$API_SUB;$VER_SUB" activation/index_template.html > "$TARGET_DIR/index.html"
