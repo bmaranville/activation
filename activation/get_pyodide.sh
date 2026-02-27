@@ -17,7 +17,7 @@ curl -L https://github.com/pyodide/pyodide/releases/download/${PYODIDE_VERSION}/
 curl -L https://github.com/pyodide/pyodide/releases/download/${PYODIDE_VERSION}/pyodide-${PYODIDE_VERSION}.tar.bz2 -o pyodide_full.tar.bz2
 
 # Extract only the core runtime + our specific wheels
-tar -xjf pyodide_full.tar.bz2 "*micropip-*.whl" "*numpy-*.whl" "*pytz-*.whl" "*pyparsing-*.whl"
+TAR_OPTIONS="--wildcards" tar -xjf pyodide_full.tar.bz2 "*micropip-*.whl" "*numpy-*.whl" "*pytz-*.whl" "*pyparsing-*.whl"
 
 # Download the latest periodictable wheel from PyPI
 pip3 download periodictable --no-deps --only-binary :all: -d ./pyodide/
