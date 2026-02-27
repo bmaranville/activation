@@ -248,7 +248,7 @@ def parse_date(datestring, default_timezone=default_timezone):
         dt = utc.localize(dt) - timedelta(0, offset)
     return dt
 
-def api_call(form):
+def api_call(form: dict):
     # Parse inputs
     errors = {}
     calculate = form.get('calculate', 'all')
@@ -277,7 +277,9 @@ def api_call(form):
         errors['exposure'] = error()
     try:
         mass_str = form.get('mass', '0')
-        if mass_str.endswith('kg'):
+        if not mass_str:
+            mass = 0
+        elif mass_str.endswith('kg'):
             mass = 1000*float(mass_str[:-2])
         elif mass_str.endswith('mg'):
             mass = 0.001*float(mass_str[:-2])
@@ -479,9 +481,7 @@ def api_call(form):
 
 def fieldstorage_to_dict(form: 'cgi.FieldStorage') -> dict:
     """
-    Converts a cgi.FieldStorage object into a standard Python dictionary.
-    Keys ending in '[]' will map to lists.
-    Otherwise, they map to single string values.
+    special handling for "rest", which is a list of times.
     """
     result = {}
     if form is None:
@@ -489,13 +489,12 @@ def fieldstorage_to_dict(form: 'cgi.FieldStorage') -> dict:
         
     for key in form.keys():
         values = form.getlist(key)
-        # If it's a single value and doesn't explicitly denote an array via '[]'
-        if key.endswith('[]'):
-            # Remove the '[]' from the key for the result dictionary
-            fixed_key = key[:-2]
-            result[fixed_key] = values
-        elif len(values) == 1:
-            result[key] = values[0]
+        if len(values) == 1:
+            value = values[0]
+            if key == "rest":
+                result[key] = value.split(",")
+            else:
+                result[key] = value
             
     return result
 
