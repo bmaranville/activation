@@ -138,10 +138,12 @@ function submit_query(target){
 
     const form = document.getElementById("id-activationForm");
     const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+    const initial_data = Object.fromEntries(formData.entries());
+    const { time_off, ...data } = initial_data; // destructuring assignment to remove time_off from data
 
-    // populate rest array and remove time_off from data
-    data.rest = ["0","1","24","360",data.pop("time_off")];
+    // populate rest array with time_off from initial data
+    data.rest = ["0","1","24","360",time_off];
+
     const query = {
         calculate: target,
         decay: DECAY_LEVEL,
@@ -439,9 +441,9 @@ function ready_callback() {
     document.querySelector("div.loader").classList.add("finished");
 }
 
-API.initialize(process_response, ready_callback);
 
 $(document).ready(function () {
+    API.initialize(process_response, ready_callback);
     parse_url_parameters();
     enable_forms();
     setup_help();
