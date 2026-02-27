@@ -248,39 +248,35 @@ def parse_date(datestring, default_timezone=default_timezone):
         dt = utc.localize(dt) - timedelta(0, offset)
     return dt
 
-def cgi_call(form):
-    #print(form, file=sys.stderr)
-    #print >>sys.stderr, "sample",form.getfirst('sample')
-    #print >>sys.stderr, "mass",form.getfirst('mass')
-
+def api_call(form):
     # Parse inputs
     errors = {}
-    calculate = form.getfirst('calculate', 'all')
+    calculate = form.get('calculate', 'all')
     if calculate not in ('scattering', 'activation', 'all'):
         errors['calculate'] = "calculate should be one of 'scattering', 'activation' or 'all'"
     try:
-        sample = form.getfirst('sample')
+        sample = form.get('sample')
         chem = formula(sample)
     except Exception:
         errors['sample'] = error()
     try:
-        fluence = float(form.getfirst('flux', 100000))
+        fluence = float(form.get('flux', 100000))
     except Exception:
         errors['flux'] = error()
     try:
-        fast_ratio = float(form.getfirst('fast', '0'))
+        fast_ratio = float(form.get('fast', '0'))
     except Exception:
         errors['fast'] = error()
     try:
-        Cd_ratio = float(form.getfirst('Cd', '0'))
+        Cd_ratio = float(form.get('Cd', '0'))
     except Exception:
         errors['Cd'] = error()
     try:
-        exposure = parse_hours(form.getfirst('exposure', '1'))
+        exposure = parse_hours(form.get('exposure', '1'))
     except Exception:
         errors['exposure'] = error()
     try:
-        mass_str = form.getfirst('mass', '0')
+        mass_str = form.get('mass', '0')
         if mass_str.endswith('kg'):
             mass = 1000*float(mass_str[:-2])
         elif mass_str.endswith('mg'):
@@ -294,26 +290,26 @@ def cgi_call(form):
     except Exception:
         errors['mass'] = error()
     try:
-        density_type, density_value = parse_density(form.getfirst('density', '0'))
+        density_type, density_value = parse_density(form.get('density', '0'))
     except Exception:
         errors['density'] = error()
     try:
-        #print >>sys.stderr,form.getlist('rest[]')
-        rest_times = [parse_rest(v) for v in form.getlist('rest[]')]
+        rest_times = [parse_rest(v) for v in form.get('rest', [])]
         if not rest_times:
             rest_times = [0, 1, 24, 360]
     except Exception:
         errors['rest'] = error()
     try:
-        decay_level = float(form.getfirst('decay', '0.001'))
+        decay_level = float(form.get('decay', '0.001'))
     except Exception:
         errors['decay'] = error()
     try:
-        thickness = float(form.getfirst('thickness', '1'))
+        thickness = float(form.get('thickness', '1'))
     except Exception:
         errors['thickness'] = error()
     try:
-        wavelength_str = form.getfirst('wavelength', '1').strip()
+        # Ensure we cast to string so we can safely .strip()
+        wavelength_str = str(form.get('wavelength', '1')).strip()
         if wavelength_str.endswith('meV'):
             wavelength = nsf.neutron_wavelength(float(wavelength_str[:-3]))
         elif wavelength_str.endswith('m/s'):
@@ -322,11 +318,10 @@ def cgi_call(form):
             wavelength = float(wavelength_str[:-3])
         else:
             wavelength = float(wavelength_str)
-        #print >>sys.stderr,wavelength_str
     except Exception:
         errors['wavelength'] = error()
     try:
-        xray_source = form.getfirst('xray', 'Cu Ka').strip()
+        xray_source = str(form.get('xray', 'Cu Ka')).strip()
         if xray_source.endswith('Ka'):
             xray_wavelength = elements.symbol(xray_source[:-2].strip()).K_alpha
         elif xray_source.endswith('keV'):
@@ -337,14 +332,12 @@ def cgi_call(form):
             xray_wavelength = elements.symbol(xray_source).K_alpha
         else:
             xray_wavelength = float(xray_source)
-        #print >>sys.stderr,"xray",xray_source,xray_wavelength
     except Exception:
         errors['xray'] = error()
     try:
-        abundance_source = form.getfirst('abundance', 'IAEA')
+        abundance_source = form.get('abundance', 'IAEA')
         if abundance_source == "IUPAC":
             abundance = activation.table_abundance
-        # CRUFT: periodictable no longer uses NIST 2001 data for abundance
         elif abundance_source == "NIST":
             abundance = activation.table_abundance
         elif abundance_source == "IAEA":
@@ -484,12 +477,36 @@ def cgi_call(form):
 
     return result
 
+def fieldstorage_to_dict(form: 'cgi.FieldStorage') -> dict:
+    """
+    Converts a cgi.FieldStorage object into a standard Python dictionary.
+    Keys ending in '[]' will map to lists.
+    Otherwise, they map to single string values.
+    """
+    result = {}
+    if form is None:
+        return result
+        
+    for key in form.keys():
+        values = form.getlist(key)
+        # If it's a single value and doesn't explicitly denote an array via '[]'
+        if key.endswith('[]'):
+            # Remove the '[]' from the key for the result dictionary
+            fixed_key = key[:-2]
+            result[fixed_key] = values
+        elif len(values) == 1:
+            result[key] = values[0]
+            
+    return result
 
 if __name__ == "__main__":
     import cgi
     try:
         form = cgi.FieldStorage()
-        response = cgi_call(form)
+
+        # Convert to dictionary
+        form_dict = fieldstorage_to_dict(form)
+        response = api_call(form_dict)
     except Exception:
         response = {
             'success': False,
