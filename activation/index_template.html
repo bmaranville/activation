@@ -12,8 +12,8 @@
     <script type="text/javascript" src="jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="jquery.tablesorter-2.0.5b.min.js"></script>
 
-    <script type="text/javascript" src="./api_webworker.js"></script>
-    <script type="text/javascript" src="./calculator_main.js"></script>
+    <script type="text/javascript" src="{{ api_script }}"></script>
+    <script type="text/javascript" src="calculator_main.js"></script>
     
 </head>
 <body>
@@ -44,7 +44,7 @@
             <table><tbody>
             <tr>
               <td>
-               <div class="controls"><input id="id_chemical_formula" type="text" class="textinput textInput" name="chemical_formula" value="Co" title="chemical formula for the material or mixture" ></div>
+               <div class="controls"><input id="id_chemical_formula" type="text" class="textinput textInput" name="sample" value="Co" title="chemical formula for the material or mixture" ></div>
               </td>
             </tr></tbody></table>
             </div>
@@ -749,7 +749,7 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
   </div>
   <div class="version">
     <!--- <div>Last modified <span id="lastmod-timestamp"></span> by website owner: NCNR</div> --->
-    <div>Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.2<a><div>
+    <div>Using <a href="https://periodictable.readthedocs.io">periodictable {{ periodictable_version }}</a></div>
   </div>
 </footer>
 
